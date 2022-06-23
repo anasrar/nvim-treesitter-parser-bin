@@ -1,0 +1,154 @@
+name: Build and Release
+on:
+  workflow_dispatch:
+
+jobs:
+  alpine:
+    name: Build using alpine
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup
+        run: |
+          git clone --depth 1 https://github.com/wbthomason/packer.nvim local/share/nvim/site/pack/packer/start/packer.nvim
+
+      - name: Build
+        uses: addnab/docker-run-action@v3
+        with:
+          image: node:18-alpine3.16
+          shell: ash
+          options: -v ${{ github.workspace }}/local:/root/.local -v ${{ github.workspace }}/config/nvim/init.lua:/root/.config/nvim/init.lua -v ${{ github.workspace }}/ts-install-all.mjs:/root/script.mjs
+          run: |
+            apk add --no-cache build-base git neovim tree-sitter tree-sitter-cli
+            nvim --version
+            nvim --headless -c 'autocmd User PackerComplete quitall' -c 'PackerSync'
+            nvim --headless -c 'autocmd User PackerComplete quitall' -c 'PackerSync'
+            nvim --headless -c 'TSConfigInfo' -c 'quitall'
+            node /root/script.mjs
+
+      - name: Zip Binary
+        run: |
+          zip -j alpine.zip local/share/nvim/site/pack/packer/start/nvim-treesitter/parser/*
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: alpine
+          path: |
+            alpine.zip
+
+  linux:
+    name: Build using linux
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup
+        run: |
+          git clone --depth 1 https://github.com/wbthomason/packer.nvim local/share/nvim/site/pack/packer/start/packer.nvim
+
+      - name: Build
+        uses: addnab/docker-run-action@v3
+        with:
+          image: ubuntu:focal
+          shell: bash
+          options: -v ${{ github.workspace }}/local:/root/.local -v ${{ github.workspace }}/config/nvim/init.lua:/root/.config/nvim/init.lua -v ${{ github.workspace }}/ts-install-all.mjs:/root/script.mjs
+          run: |
+            apt-get update -y && apt-get upgrade -y
+            apt install build-essential git curl wget -y
+            curl -sL https://deb.nodesource.com/setup_18.x | bash
+            apt-get install nodejs -y
+            npm install -g tree-sitter-cli
+            wget https://github.com/neovim/neovim/releases/download/nightly/nvim-linux64.deb
+            apt-get install ./nvim-linux64.deb -y
+            nvim --version
+            nvim --headless -c 'autocmd User PackerComplete quitall' -c 'PackerSync'
+            nvim --headless -c 'autocmd User PackerComplete quitall' -c 'PackerSync'
+            nvim --headless -c 'TSConfigInfo' -c 'quitall'
+            node /root/script.mjs
+
+      - name: Zip Binary
+        run: |
+          zip -j linux.zip local/share/nvim/site/pack/packer/start/nvim-treesitter/parser/*
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: linux
+          path: |
+            linux.zip
+
+  windows:
+    name: Build using windows
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup
+        run: |
+          git clone https://github.com/wbthomason/packer.nvim "$env:LOCALAPPDATA\nvim-data\site\pack\packer\start\packer.nvim"
+          npm install --location=global tree-sitter-cli
+          choco install neovim
+          mkdir "$env:LOCALAPPDATA\nvim"
+          Copy-Item "${{ github.workspace }}\config\nvim\init.lua" -Destination "$env:LOCALAPPDATA\nvim"
+
+      - name: Build
+        run: |
+          C:\tools\neovim\nvim-win64\bin\nvim --version
+          C:\tools\neovim\nvim-win64\bin\nvim --headless -c 'autocmd User PackerComplete quitall' -c 'PackerSync'
+          C:\tools\neovim\nvim-win64\bin\nvim --headless -c 'autocmd User PackerComplete quitall' -c 'PackerSync'
+          C:\tools\neovim\nvim-win64\bin\nvim --headless -c 'TSConfigInfo' -c 'quitall'
+          node ts-install-all.mjs
+
+      - name: Zip Binary
+        run: |
+          Compress-Archive -Path "$env:LOCALAPPDATA\nvim-data\site\pack\packer\start\nvim-treesitter\parser\*" -DestinationPath ${{ github.workspace }}\windows.zip
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: windows
+          path: |
+            windows.zip
+
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    needs: [alpine, linux, windows]
+    strategy:
+      matrix:
+        tag: [alpine, linux, windows]
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Download Artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: ${{ matrix.tag }}
+          path: files
+
+      - name: Unzip Binary
+        run: |
+          unzip -j files/${{ matrix.tag }}.zip -d files
+
+      - name: Create Body Release
+        run: |
+          echo "BUILD: $(date '+%Y-%m-%d')" > body.md
+
+      - name: Create Release and Upload Assets
+        uses: ncipollo/release-action@v1.10.0
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          allowUpdates: true
+          tag: ${{ matrix.tag }}
+          prerelease: true
+          name: ${{ matrix.tag }}
+          artifacts: files/*.so
+          bodyFile: body.md

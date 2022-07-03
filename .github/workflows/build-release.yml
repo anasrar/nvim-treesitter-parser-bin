@@ -21,7 +21,7 @@ jobs:
         with:
           image: node:18-alpine3.16
           shell: ash
-          options: -v ${{ github.workspace }}/local:/root/.local -v ${{ github.workspace }}/config/nvim/init.lua:/root/.config/nvim/init.lua -v ${{ github.workspace }}/ts-install-all.mjs:/root/script.mjs
+          options: -v ${{ github.workspace }}/local:/root/.local -v ${{ github.workspace }}/config/nvim/init.lua:/root/.config/nvim/init.lua -v ${{ github.workspace }}/ts-install-all.mjs:/root/script.mjs -v ${{ github.workspace }}/ts-update.mjs:/root/update.mjs
           run: |
             apk add --no-cache build-base git neovim tree-sitter tree-sitter-cli
             nvim --version
@@ -29,6 +29,7 @@ jobs:
             nvim --headless -c 'autocmd User PackerComplete quitall' -c 'PackerSync'
             nvim --headless -c 'TSConfigInfo' -c 'quitall'
             node /root/script.mjs
+            node /root/update.mjs
 
       - name: Zip Binary
         run: |
@@ -57,7 +58,7 @@ jobs:
         with:
           image: ubuntu:focal
           shell: bash
-          options: -v ${{ github.workspace }}/local:/root/.local -v ${{ github.workspace }}/config/nvim/init.lua:/root/.config/nvim/init.lua -v ${{ github.workspace }}/ts-install-all.mjs:/root/script.mjs
+          options: -v ${{ github.workspace }}/local:/root/.local -v ${{ github.workspace }}/config/nvim/init.lua:/root/.config/nvim/init.lua -v ${{ github.workspace }}/ts-install-all.mjs:/root/script.mjs -v ${{ github.workspace }}/ts-update.mjs:/root/update.mjs
           run: |
             apt-get update -y && apt-get upgrade -y
             apt install build-essential git curl wget -y
@@ -71,6 +72,7 @@ jobs:
             nvim --headless -c 'autocmd User PackerComplete quitall' -c 'PackerSync'
             nvim --headless -c 'TSConfigInfo' -c 'quitall'
             node /root/script.mjs
+            node /root/update.mjs
 
       - name: Zip Binary
         run: |
@@ -105,6 +107,7 @@ jobs:
           C:\tools\neovim\nvim-win64\bin\nvim --headless -c 'autocmd User PackerComplete quitall' -c 'PackerSync'
           C:\tools\neovim\nvim-win64\bin\nvim --headless -c 'TSConfigInfo' -c 'quitall'
           node ts-install-all.mjs
+          node ts-update.mjs
 
       - name: Zip Binary
         run: |

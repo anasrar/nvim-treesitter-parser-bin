@@ -13,7 +13,7 @@ const stop = (msg) => {
 
 setTimeout(() => {
   stop('ERROR: time out');
-}, 1000 * 60 * 15);
+}, 1000 * 60 * 12);
 
 treesitter.stderr.on('data', (data) => {
   data = data
@@ -26,6 +26,10 @@ treesitter.stderr.on('data', (data) => {
 
   if (output.includes('Out of memory')) {
     stop('ERROR: out of memory');
+  }
+
+  if (output.includes('up-to-date')) {
+    stop('DONE: all parser are up-to-date');
   }
 
   const installed = output.split('installed');

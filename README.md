@@ -8,13 +8,15 @@ download `all.zip` and extract the parser `so` file to `nvim-treesitter/parser/`
 
 ## Example Packer using wget and unzip
 
-```
+```bash
 wget https://github.com/anasrar/nvim-treesitter-parser-bin/releases/download/linux/all.zip
+# extract specific parser
 unzip -j all.zip rust.so json.so -d ~/.local/share/nvim/site/pack/packer/start/nvim-treesitter/parser/
+# extract all parser
+unzip -j all.zip *.so -d ~/.local/share/nvim/site/pack/packer/start/nvim-treesitter/parser/
 ```
 
 # Platform
 
 - linux `tested`
-- alpine (linux) `tested`
 - windows `untested`

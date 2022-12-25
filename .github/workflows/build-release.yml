@@ -2,11 +2,11 @@ name: Build and Release
 on:
   workflow_dispatch:
   schedule:
-    - cron: "0 2 * * *" # run at 2 AM UTC
+    - cron: "0 2 */2 * *" # run every 2 days at 2 AM UTC
 
 jobs:
   linux:
-    name: Build using linux
+    name: Build for linux
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -49,32 +49,40 @@ jobs:
             linux.zip
 
   windows:
-    name: Build using windows
-    runs-on: windows-latest
+    name: Build for windows
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v3
 
       - name: Setup
         run: |
-          git clone https://github.com/wbthomason/packer.nvim "$env:LOCALAPPDATA\nvim-data\site\pack\packer\start\packer.nvim"
-          npm install --location=global tree-sitter-cli
-          choco install neovim
-          mkdir "$env:LOCALAPPDATA\nvim"
-          Copy-Item "${{ github.workspace }}\config\nvim\init.lua" -Destination "$env:LOCALAPPDATA\nvim"
+          git clone --depth 1 https://github.com/wbthomason/packer.nvim local/share/nvim/site/pack/packer/start/packer.nvim
 
       - name: Build
-        run: |
-          C:\tools\neovim\nvim-win64\bin\nvim --version
-          C:\tools\neovim\nvim-win64\bin\nvim --headless -c 'autocmd User PackerComplete quitall' -c 'PackerSync'
-          C:\tools\neovim\nvim-win64\bin\nvim --headless -c 'autocmd User PackerComplete quitall' -c 'PackerSync'
-          C:\tools\neovim\nvim-win64\bin\nvim --headless -c 'TSConfigInfo' -c 'quitall'
-          node ts-install-all.mjs
-          node ts-update.mjs
+        uses: addnab/docker-run-action@v3
+        with:
+          image: ubuntu:focal
+          shell: bash
+          options: -v ${{ github.workspace }}/local:/root/.local -v ${{ github.workspace }}/config/nvim/init.lua:/root/.config/nvim/init.lua -v ${{ github.workspace }}/ts-install-all.mjs:/root/script.mjs -v ${{ github.workspace }}/ts-update.mjs:/root/update.mjs
+          run: |
+            apt-get update -y && apt-get upgrade -y
+            apt install build-essential git curl wget mingw-w64 -y
+            curl -sL https://deb.nodesource.com/setup_18.x | bash
+            apt-get install nodejs -y
+            npm install -g tree-sitter-cli
+            wget https://github.com/neovim/neovim/releases/download/nightly/nvim-linux64.deb
+            apt-get install ./nvim-linux64.deb -y
+            nvim --version
+            nvim --headless -c 'autocmd User PackerComplete quitall' -c 'PackerSync'
+            nvim --headless -c 'autocmd User PackerComplete quitall' -c 'PackerSync'
+            nvim --headless -c 'TSConfigInfo' -c 'quitall'
+            node /root/script.mjs
+            node /root/update.mjs
 
       - name: Zip Binary
         run: |
-          Compress-Archive -Path "$env:LOCALAPPDATA\nvim-data\site\pack\packer\start\nvim-treesitter\parser\*" -DestinationPath ${{ github.workspace }}\windows.zip
+          zip -j windows.zip local/share/nvim/site/pack/packer/start/nvim-treesitter/parser/*
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v2
@@ -125,3 +133,14 @@ jobs:
           name: ${{ matrix.tag }}
           artifacts: all.zip
           bodyFile: body.md
+
+  del_runs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Delete workflow runs
+        uses: Mattraks/delete-workflow-runs@v2
+        with:
+          token: ${{ github.token }}
+          repository: ${{ github.repository }}
+          retain_days: 30
+          keep_minimum_runs: 6

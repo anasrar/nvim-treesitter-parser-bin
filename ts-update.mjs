@@ -2,7 +2,7 @@ import { spawn } from 'child_process';
 
 let output = '';
 
-const treesitter = spawn(process.platform === 'win32' ? `C:/tools/neovim/nvim-win64/bin/nvim` : 'nvim', ['--headless', '-c', 'TSUpdate']);
+const treesitter = spawn(process.platform === 'win32' ? `C:/tools/neovim/nvim-win64/bin/nvim` : './squashfs-root/usr/bin/nvim', ['--headless', '-c', 'TSUpdate']);
 
 const stop = (msg) => {
   treesitter.stderr.pause();

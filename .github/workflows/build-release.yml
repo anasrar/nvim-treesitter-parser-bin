@@ -28,12 +28,13 @@ jobs:
             curl -sL https://deb.nodesource.com/setup_18.x | bash
             apt-get install nodejs -y
             npm install -g tree-sitter-cli
-            wget https://github.com/neovim/neovim/releases/download/nightly/nvim-linux64.deb
-            apt-get install ./nvim-linux64.deb -y
-            nvim --version
-            nvim --headless -c 'autocmd User PackerComplete quitall' -c 'PackerSync'
-            nvim --headless -c 'autocmd User PackerComplete quitall' -c 'PackerSync'
-            nvim --headless -c 'TSConfigInfo' -c 'quitall'
+            wget https://github.com/neovim/neovim/releases/download/nightly/nvim.appimage
+            chmod a+x ./nvim.appimage
+            ./nvim.appimage --appimage-extract
+            ./squashfs-root/usr/bin/nvim --version
+            ./squashfs-root/usr/bin/nvim --headless -c 'autocmd User PackerComplete quitall' -c 'PackerSync'
+            ./squashfs-root/usr/bin/nvim --headless -c 'autocmd User PackerComplete quitall' -c 'PackerSync'
+            ./squashfs-root/usr/bin/nvim --headless -c 'TSConfigInfo' -c 'quitall'
             node /root/script.mjs
             node /root/update.mjs
 
@@ -71,12 +72,13 @@ jobs:
             curl -sL https://deb.nodesource.com/setup_18.x | bash
             apt-get install nodejs -y
             npm install -g tree-sitter-cli
-            wget https://github.com/neovim/neovim/releases/download/nightly/nvim-linux64.deb
-            apt-get install ./nvim-linux64.deb -y
-            nvim --version
-            nvim --headless -c 'autocmd User PackerComplete quitall' -c 'PackerSync'
-            nvim --headless -c 'autocmd User PackerComplete quitall' -c 'PackerSync'
-            nvim --headless -c 'TSConfigInfo' -c 'quitall'
+            wget https://github.com/neovim/neovim/releases/download/nightly/nvim.appimage
+            chmod a+x ./nvim.appimage
+            ./nvim.appimage --appimage-extract
+            ./squashfs-root/usr/bin/nvim --version
+            ./squashfs-root/usr/bin/nvim --headless -c 'autocmd User PackerComplete quitall' -c 'PackerSync'
+            ./squashfs-root/usr/bin/nvim --headless -c 'autocmd User PackerComplete quitall' -c 'PackerSync'
+            ./squashfs-root/usr/bin/nvim --headless -c 'TSConfigInfo' -c 'quitall'
             node /root/script.mjs
             node /root/update.mjs
 

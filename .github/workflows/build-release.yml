@@ -27,7 +27,6 @@ jobs:
             apt install build-essential git curl wget -y
             curl -sL https://deb.nodesource.com/setup_18.x | bash
             apt-get install nodejs -y
-            npm install -g tree-sitter-cli
             wget https://github.com/neovim/neovim/releases/download/nightly/nvim.appimage
             chmod a+x ./nvim.appimage
             ./nvim.appimage --appimage-extract
@@ -71,7 +70,6 @@ jobs:
             apt install build-essential git curl wget mingw-w64 -y
             curl -sL https://deb.nodesource.com/setup_18.x | bash
             apt-get install nodejs -y
-            npm install -g tree-sitter-cli
             wget https://github.com/neovim/neovim/releases/download/nightly/nvim.appimage
             chmod a+x ./nvim.appimage
             ./nvim.appimage --appimage-extract

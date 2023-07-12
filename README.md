@@ -36,3 +36,4 @@ unzip -j all.zip *.so -d ~/.local/share/nvim/lazy/nvim-treesitter/parser/
 
 - linux `tested`
 - windows `untested`
+- android-aarch64-termux `tested`

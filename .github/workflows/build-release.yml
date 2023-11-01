@@ -24,9 +24,11 @@ jobs:
           options: -v ${{ github.workspace }}/local:/root/.local -v ${{ github.workspace }}/config/nvim/init.lua:/root/.config/nvim/init.lua -v ${{ github.workspace }}/ts-install-all.mjs:/root/script.mjs -v ${{ github.workspace }}/ts-update.mjs:/root/update.mjs
           run: |
             apt-get update -y && apt-get upgrade -y
-            apt install build-essential git curl wget -y
-            curl -sL https://deb.nodesource.com/setup_18.x | bash
-            apt-get install nodejs -y
+            apt install build-essential git curl wget ca-certificates gnupg -y
+            mkdir -p /etc/apt/keyrings
+            curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg
+            echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_18.x nodistro main" | tee /etc/apt/sources.list.d/nodesource.list
+            apt-get update && apt-get install nodejs -y
             wget https://github.com/neovim/neovim/releases/download/nightly/nvim.appimage
             chmod a+x ./nvim.appimage
             ./nvim.appimage --appimage-extract
@@ -67,9 +69,11 @@ jobs:
           options: -v ${{ github.workspace }}/local:/root/.local -v ${{ github.workspace }}/config/nvim/init.lua:/root/.config/nvim/init.lua -v ${{ github.workspace }}/ts-install-all.mjs:/root/script.mjs -v ${{ github.workspace }}/ts-update.mjs:/root/update.mjs
           run: |
             apt-get update -y && apt-get upgrade -y
-            apt install git curl wget unzip patchelf -y
-            curl -sL https://deb.nodesource.com/setup_18.x | bash
-            apt-get install nodejs -y
+            apt install git curl wget unzip patchelf ca-certificates gnupg -y
+            mkdir -p /etc/apt/keyrings
+            curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg
+            echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_18.x nodistro main" | tee /etc/apt/sources.list.d/nodesource.list
+            apt-get update && apt-get install nodejs -y
             wget https://dl.google.com/android/repository/android-ndk-r25c-linux.zip
             unzip android-ndk-r25c-linux.zip -d "$HOME"
             export PATH="$HOME/android-ndk-r25c/toolchains/llvm/prebuilt/linux-x86_64/bin:$PATH"
@@ -114,9 +118,11 @@ jobs:
           options: -v ${{ github.workspace }}/local:/root/.local -v ${{ github.workspace }}/config/nvim/init.lua:/root/.config/nvim/init.lua -v ${{ github.workspace }}/ts-install-all.mjs:/root/script.mjs -v ${{ github.workspace }}/ts-update.mjs:/root/update.mjs
           run: |
             apt-get update -y && apt-get upgrade -y
-            apt install build-essential git curl wget mingw-w64 -y
-            curl -sL https://deb.nodesource.com/setup_18.x | bash
-            apt-get install nodejs -y
+            apt install build-essential git curl wget mingw-w64 ca-certificates gnupg -y
+            mkdir -p /etc/apt/keyrings
+            curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg
+            echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_18.x nodistro main" | tee /etc/apt/sources.list.d/nodesource.list
+            apt-get update && apt-get install nodejs -y
             wget https://github.com/neovim/neovim/releases/download/nightly/nvim.appimage
             chmod a+x ./nvim.appimage
             ./nvim.appimage --appimage-extract
